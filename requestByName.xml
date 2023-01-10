@@ -1,0 +1,10 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+				  xmlns:gs="http://www.example.com/schema">
+                  <!--  xmlns:gs="http://rigobertocanseco.dev/pokeapi"> -->
+    <soapenv:Header/>
+    <soapenv:Body>
+        <gs:GetPokemonRequest>
+            <gs:name>pikachu</gs:name>
+        </gs:GetPokemonRequest>
+    </soapenv:Body>
+</soapenv:Envelope>

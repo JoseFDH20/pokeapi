@@ -1,0 +1,62 @@
+package com.josedimash.pokeapicosoap.ws;
+
+import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.ws.config.annotation.EnableWs;
+import org.springframework.ws.config.annotation.WsConfigurerAdapter;
+import org.springframework.ws.server.EndpointInterceptor;
+import org.springframework.ws.transport.http.MessageDispatcherServlet;
+import org.springframework.ws.wsdl.wsdl11.DefaultWsdl11Definition;
+import org.springframework.xml.xsd.SimpleXsdSchema;
+import org.springframework.xml.xsd.XsdSchema;
+
+import com.josedimash.pokeapicosoap.interceptor.WebServiceInterceptor;
+
+import java.util.List;
+
+@Configuration
+@EnableWs
+public class WebServiceConfig extends WsConfigurerAdapter {
+    private final
+    WebServiceInterceptor webServiceInterceptor;
+
+    public WebServiceConfig(WebServiceInterceptor webServiceInterceptor) {
+        this.webServiceInterceptor = webServiceInterceptor;
+    }
+
+    @Bean
+    public ServletRegistrationBean<MessageDispatcherServlet> messageDispatcherServlet(ApplicationContext applicationContext) {
+        MessageDispatcherServlet servlet = new MessageDispatcherServlet();
+        servlet.setApplicationContext(applicationContext);
+        servlet.setTransformWsdlLocations(true);
+        return new ServletRegistrationBean<>(servlet, "/ws/*");
+    }
+
+    @Bean(name = "pokeapi")
+    public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema pokeapiSchema) {
+        DefaultWsdl11Definition wsdl11Definition = new DefaultWsdl11Definition();
+        wsdl11Definition.setPortTypeName("PokeapiSchemaPort");
+        wsdl11Definition.setLocationUri("/ws");
+        wsdl11Definition.setTargetNamespace("http://www.example.com/schema");
+        //wsdl11Definition.setTargetNamespace("http://rigobertocanseco.dev/pokeapi");
+        wsdl11Definition.setSchema(pokeapiSchema);
+        return wsdl11Definition;
+    }
+
+    @Bean
+    public XsdSchema pokemonSchema() {
+        return new SimpleXsdSchema(new ClassPathResource("pokeapi.xsd"));
+    }
+
+    @Override
+    public void addInterceptors(List<EndpointInterceptor> interceptors)  {
+        try {
+            interceptors.add(webServiceInterceptor);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
